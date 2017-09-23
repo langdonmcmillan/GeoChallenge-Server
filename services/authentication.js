@@ -7,11 +7,12 @@ const keys = require("../config/keys");
 const User = mongoose.model("users");
 
 module.exports = function(passport) {
-    var opts = {};
-    opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-    opts.secretOrKey = keys.secret;
+    var options = {
+        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+        secretOrKey: keys.secret
+    };
     passport.use(
-        new JwtStrategy(opts, function(jwt_payload, done) {
+        new JwtStrategy(options, function(jwt_payload, done) {
             User.findOne({ id: jwt_payload.id }, function(error, user) {
                 if (error) {
                     return done(error, false);
@@ -24,4 +25,9 @@ module.exports = function(passport) {
             });
         })
     );
+    return {
+        requireToken: () => {
+            return passport.authenticate("jwt", { session: false });
+        }
+    };
 };

@@ -4,7 +4,7 @@ const passport = require("passport");
 const bodyParser = require("body-parser");
 const keys = require("./config/keys");
 require("./models/user");
-require("./services/login")(passport);
+const auth = require("./services/authentication")(passport);
 
 mongoose.connect(keys.mongoUri);
 
@@ -21,10 +21,7 @@ app.use(passport.session());
 
 require("./routes/login-routes")(app);
 
-app.get("/secret", passport.authenticate("jwt", { session: false }), function(
-    req,
-    res
-) {
+app.get("/secret", auth.requireToken(), function(req, res) {
     res.json("Success! You can not see this without a token");
 });
 

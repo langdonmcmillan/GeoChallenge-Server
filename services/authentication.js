@@ -1,33 +1,59 @@
 const passport = require("passport");
 const JwtStrategy = require("passport-jwt").Strategy;
+const LocalStrategy = require("passport-local");
 const ExtractJwt = require("passport-jwt").ExtractJwt;
-const mongoose = require("mongoose");
+
 const keys = require("../config/keys");
+const User = require("../models/user");
 
-const User = mongoose.model("users");
+const localLogin = new LocalStrategy(function(username, password, done) {
+    User.findOne(
+        { $or: [{ userName: username }, { email: username }] },
+        function(error, user) {
+            if (error) {
+                return done(error);
+            }
+            if (!user) {
+                return done(null, false);
+            }
 
-module.exports = function(passport) {
-    var options = {
-        jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-        secretOrKey: keys.secret
-    };
-    passport.use(
-        new JwtStrategy(options, function(jwt_payload, done) {
-            User.findOne({ id: jwt_payload.id }, function(error, user) {
+            user.comparePassword(password, function(error, isMatch) {
                 if (error) {
-                    return done(error, false);
+                    return done(error);
                 }
-                if (user) {
-                    done(null, user);
-                } else {
-                    done(null, false);
+                if (!isMatch) {
+                    return done(null, false);
                 }
+                return done(null, user);
             });
-        })
-    );
-    return {
-        requireToken: () => {
-            return passport.authenticate("jwt", { session: false });
         }
-    };
+    );
+});
+
+const jwtOptions = {
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: keys.secret
+};
+
+const jwtLogin = new JwtStrategy(jwtOptions, function(jwt_payload, done) {
+    console.log("payload", jwt_payload);
+    User.findById(jwt_payload.data, function(error, user) {
+        if (error) {
+            console.log("error", error);
+            return done(error, false);
+        }
+        if (user) {
+            done(null, user);
+        } else {
+            done(null, false);
+        }
+    });
+});
+
+passport.use(jwtLogin);
+passport.use(localLogin);
+
+module.exports = {
+    requireAuthentication: passport.authenticate("jwt", { session: false }),
+    requireLogin: passport.authenticate("local", { session: false })
 };

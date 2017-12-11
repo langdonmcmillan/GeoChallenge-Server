@@ -30,11 +30,11 @@ exports.signup = (req, res, next) => {
 
 exports.login = (req, res, next) => {
     const { user } = req;
-    res.json({ token: generateToken(user.id) });
+    res.send({ token: generateToken(user.id) });
 };
 
 const generateToken = user => {
     return jwt.sign({ data: user }, keys.secret, {
-        expiresIn: 60 * 60 * 24 * 30
+        expiresIn: "30 days"
     });
 };

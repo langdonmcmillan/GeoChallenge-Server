@@ -6,29 +6,38 @@ const ExtractJwt = require("passport-jwt").ExtractJwt;
 const keys = require("../config/keys");
 const User = require("../models/user");
 
-const localLogin = new LocalStrategy(function(username, password, done) {
-    User.findOne(
-        { $or: [{ userName: username }, { email: username }] },
-        function(error, user) {
-            if (error) {
-                return done(error);
-            }
-            if (!user) {
-                return done(null, false);
-            }
+const errorMessage = "An error occurred. Please try again later.";
+const noUser = "No user with that User Name/Email was found.";
+const wrongPassword = "Password does not match user record.";
 
-            user.comparePassword(password, function(error, isMatch) {
-                if (error) {
-                    return done(error);
+const localLogin = function(userName, password, callback) {
+    try {
+        let result = { success: false, message: "", user: false };
+
+        User.findOne(
+            { $or: [{ userName: userName }, { email: userName }] },
+            function(error, user) {
+                if (!user) {
+                    result.message = noUser;
+                    return callback(result);
+                } else {
+                    user.comparePassword(password, function(error, isMatch) {
+                        if (!isMatch) {
+                            result.message = wrongPassword;
+                            return callback(result);
+                        }
+                        result.success = true;
+                        result.user = user;
+                        return callback(result);
+                    });
                 }
-                if (!isMatch) {
-                    return done(null, false);
-                }
-                return done(null, user);
-            });
-        }
-    );
-});
+            }
+        );
+    } catch (error) {
+        result.message = errorMessage;
+        return callback(result);
+    }
+};
 
 const jwtOptions = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -36,16 +45,14 @@ const jwtOptions = {
 };
 
 const jwtLogin = new JwtStrategy(jwtOptions, function(jwt_payload, done) {
-    console.log("payload", jwt_payload);
     User.findById(jwt_payload.data, function(error, user) {
         if (error) {
-            console.log("error", error);
-            return done(error, false);
+            return done(error, false, { message: errorMessage });
         }
         if (user) {
             done(null, user);
         } else {
-            done(null, false);
+            done(null, false, { message: noUser });
         }
     });
 });
@@ -55,5 +62,5 @@ passport.use(localLogin);
 
 module.exports = {
     requireAuthentication: passport.authenticate("jwt", { session: false }),
-    requireLogin: passport.authenticate("local", { session: false })
+    loginUser: localLogin
 };

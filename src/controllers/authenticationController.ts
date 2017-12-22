@@ -2,7 +2,7 @@ import * as jwt from "jsonwebtoken";
 import * as mongoose from "mongoose";
 import { Response, Request, NextFunction } from "express";
 
-import keys from "../config/keys";
+import Keys from "../config/keys";
 import { default as User, UserModel } from "../models/user";
 
 const errorMessage = "An error occurred. Please try again later.";
@@ -89,7 +89,7 @@ export const fetchUser = async (
 };
 
 const generateToken = (userId: string) => {
-    return jwt.sign({ data: userId }, keys.secret, {
+    return jwt.sign({ data: userId }, Keys.secret, {
         expiresIn: "30 days"
     });
 };

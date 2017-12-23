@@ -16,6 +16,7 @@
         "build-ts": "tsc",
         "watch-ts": "tsc -w",
         "tslint": "tslint -c tslint.json -p tsconfig.json",
+        "client": "cd ../client && npm run start",
         "dev": "concurrently \"npm run server\" \"npm run client\""
     },
     "jest": {

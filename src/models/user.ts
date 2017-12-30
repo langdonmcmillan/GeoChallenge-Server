@@ -3,20 +3,20 @@ import * as bcrypt from "bcrypt-nodejs";
 
 const { Schema } = mongoose;
 
-export type UserModel = mongoose.Document & {
+export interface IUser extends mongoose.Document {
     userName: string;
-    email: string;
-    password: string;
+    email?: string;
+    password?: string;
 
-    comparePassword: (
+    comparePassword?: (
         enteredPassword: string,
         callback: (error: Error, isMatch: Boolean) => void
     ) => void;
-};
+}
 
 const userSchema = new Schema({
     userName: { type: String, unique: true, required: true, lowercase: true },
-    email: { type: String, unique: true, required: true, lowercase: true },
+    email: { type: String, unique: true, sparse: true, lowercase: true },
     password: { type: String, required: true }
 });
 
@@ -49,4 +49,7 @@ userSchema.methods.comparePassword = function(
     });
 };
 
-export default mongoose.model("users", userSchema);
+export const User: mongoose.Model<IUser> = mongoose.model<IUser>(
+    "User",
+    userSchema
+);

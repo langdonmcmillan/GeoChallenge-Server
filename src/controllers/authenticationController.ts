@@ -1,9 +1,8 @@
-import * as jwt from "jsonwebtoken";
-import * as mongoose from "mongoose";
 import { Response, Request, NextFunction } from "express";
 
 import Keys from "../config/keys";
-import { default as User, UserModel } from "../models/user";
+import { IUser, User } from "../models/user";
+import { generateToken } from "../services/authentication";
 
 const errorMessage = "An error occurred. Please try again later.";
 const noUser = "No user with that User Name/Email was found.";
@@ -18,8 +17,8 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
             .send({ message: "Email and password required." });
     User.findOne(
         { $or: [{ userName: userName }, { email: email }] },
-        (error, existingUser: UserModel) => {
-            if (error) return next(error);
+        (error, existingUser: IUser) => {
+            if (error) return res.status(500).send({ message: errorMessage });
 
             if (existingUser) {
                 const messageItem =
@@ -35,7 +34,8 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
                 userName: userName
             });
             user.save(error => {
-                if (error) return next(error);
+                if (error)
+                    return res.status(500).send({ message: errorMessage });
                 const token = generateToken(user.id);
                 res.json({ token, user });
             });
@@ -49,11 +49,10 @@ export const login = async (
     next: NextFunction
 ) => {
     const { userName, password } = req.body;
-
     try {
         User.findOne(
             { $or: [{ userName: userName }, { email: userName }] },
-            function(error, user: UserModel) {
+            function(error, user: IUser) {
                 if (!user) {
                     res.status(401).send(noUser);
                 } else {
@@ -66,7 +65,7 @@ export const login = async (
                             if (!isMatch) {
                                 res.status(401).send(wrongPassword);
                             } else {
-                                const token = generateToken(user.id);
+                                const token = generateToken(user._id);
                                 res.status(200).send({ token, user });
                             }
                         }
@@ -79,17 +78,11 @@ export const login = async (
     }
 };
 
-export const fetchUser = async (
+export const getUser = async (
     req: Request,
     res: Response,
     next: NextFunction
 ) => {
     const { user } = req;
     res.send(user);
-};
-
-const generateToken = (userId: string) => {
-    return jwt.sign({ data: userId }, Keys.secret, {
-        expiresIn: "30 days"
-    });
 };

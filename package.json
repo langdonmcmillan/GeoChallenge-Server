@@ -9,15 +9,16 @@
     "author": "Bowden Kelly",
     "license": "MIT",
     "scripts": {
-        "start": "npm run serve",
         "build": "npm run build-ts && npm run tslint",
-        "server": "concurrently \"npm run build\" \"node dist/index.js\"",
+        "serve": "node dist/index.js",
+        "watch-node": "nodemon dist/index.js",
+        "watch": "concurrently -k -p \"[{name}]\" -c \"yellow.bold,cyan.bold,green.bold\" \"npm run watch-ts\" \"npm run watch-node\"",
         "test": "jest --forceExit",
         "build-ts": "tsc",
         "watch-ts": "tsc -w",
         "tslint": "tslint -c tslint.json -p tsconfig.json",
         "client": "cd ../client && npm run start",
-        "dev": "concurrently \"npm run server\" \"npm run client\""
+        "dev": "concurrently \"npm run serve\" \"npm run client\""
     },
     "jest": {
         "globals": {
@@ -25,11 +26,16 @@
                 "tsConfigFile": "tsconfig.json"
             }
         },
-        "moduleFileExtensions": ["ts", "js"],
+        "moduleFileExtensions": [
+            "ts",
+            "js"
+        ],
         "transform": {
             "^.+\\.(ts|tsx)$": "./node_modules/ts-jest/preprocessor.js"
         },
-        "testMatch": ["**/test/**/*.test.(ts|js)"],
+        "testMatch": [
+            "**/test/**/*.test.(ts|js)"
+        ],
         "testEnvironment": "node"
     },
     "dependencies": {
@@ -58,7 +64,8 @@
         "passport-jwt": "^3.0.0",
         "passport-local": "^1.0.0",
         "pug": "^2.0.0-rc.4",
-        "request": "^2.83.0"
+        "request": "^2.83.0",
+        "uuid": "^3.1.0"
     },
     "devDependencies": {
         "@types/async": "^2.0.40",
@@ -86,6 +93,7 @@
         "@types/passport-jwt": "^3.0.0",
         "@types/request": "^2.0.7",
         "@types/supertest": "^2.0.0",
+        "@types/uuid": "^3.4.3",
         "concurrently": "^3.4.0",
         "jest": "^21.2.1",
         "node-sass": "^4.5.2",

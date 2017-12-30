@@ -6,6 +6,8 @@ import * as bodyParser from "body-parser";
 
 import Keys from "./config/keys";
 import AuthenticationRoutes from "./routes/authentication";
+import CityRoutes from "./routes/city";
+import GameRoutes from "./routes/game";
 
 mongoose.connect(Keys.mongoUri);
 
@@ -24,6 +26,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 AuthenticationRoutes(app);
+CityRoutes(app);
+GameRoutes(app);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);

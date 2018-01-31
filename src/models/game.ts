@@ -28,17 +28,20 @@ export interface IGame extends mongoose.Document {
 
 const gameSchema = new Schema({
     users: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    rounds: {
-        city: { type: Schema.Types.ObjectId, ref: "City" },
-        guesses: [
-            {
-                user: { type: Schema.Types.ObjectId, ref: "User" },
-                coordinates: { latitude: Number, longitude: Number },
-                time: Number,
-                score: Number
-            }
-        ]
-    },
+    rounds: [
+        {
+            city: { type: Schema.Types.ObjectId, ref: "City" },
+            guesses: [
+                {
+                    user: { type: Schema.Types.ObjectId, ref: "User" },
+                    coordinates: { latitude: Number, longitude: Number },
+                    time: Number,
+                    score: Number
+                }
+            ],
+            number: Number
+        }
+    ],
     difficulty: { type: String, enum: enumToStringArray(Difficulty) }
 });
 

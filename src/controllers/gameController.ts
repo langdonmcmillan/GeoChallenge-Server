@@ -4,7 +4,12 @@ import * as _ from "lodash";
 
 import { getUserFromToken } from "../services/authentication";
 import { Game, IGame, IRound, IGuess } from "../models/game";
-import { ICity } from "../models/city";
+import { ICity, City } from "../models/city";
+import {
+    addGuess,
+    getDifficultyFilters,
+    closePreviousQuestions
+} from "../services/game";
 
 export const createGame = async (
     req: Request,
@@ -26,14 +31,14 @@ export const createGame = async (
     });
     try {
         game = await game.save();
-        res.json({ token, game });
+        res.json({ game, token });
     } catch (error) {
         console.log("Error: ", error);
         res.status(500).send({ message: "An error occurred" });
     }
 };
 
-export const updateGame = async (
+export const addCity = async (
     req: Request,
     res: Response,
     next: NextFunction
@@ -41,69 +46,50 @@ export const updateGame = async (
     const { user, token } = await getUserFromToken(
         req.headers["authorization"].replace(/^Bearer\s/i, "")
     );
-    const { rounds, _id } = req.body;
-
-    let game: IGame = await Game.findById(_id);
-    game.rounds = updateRounds(rounds);
-
+    const { gameId, guess } = req.body;
     try {
-        game = await game.save();
-        res.send(game);
+        const game: IGame = await Game.findById(gameId).populate("rounds.city");
+        const updatedGame = await addGuess(game, guess);
+        await updatedGame.save();
+        res.send(updatedGame);
     } catch (error) {
         console.log("Error: ", error);
         res.status(500).send({ message: "An error occurred" });
     }
 };
 
-const updateRounds = (rounds: IRound[]) => {
-    rounds = rounds.map(round => {
-        round.guesses.forEach(guess => {
-            if (!guess.score || guess.score === 0) {
-                guess.score = calculateScore(round.city, guess);
+export const getRandomCity = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    const { gameId } = req.query;
+    const game: IGame = await Game.findById(gameId).populate("rounds.city");
+    const difficultyFilters = getDifficultyFilters(game.difficulty);
+    const previousCities: string[] = game.rounds.map(round => round.city._id);
+    City.aggregate(
+        [
+            {
+                $match: {
+                    population: { $gt: difficultyFilters.population },
+                    _id: { $nin: previousCities }
+                }
+            },
+            { $sample: { size: 1 } }
+        ],
+        async (error: Error, city: ICity[]) => {
+            if (error) return res.status(500).send({ message: error });
+
+            if (city) {
+                const updatedGame = closePreviousQuestions(game);
+                updatedGame.rounds = updatedGame.rounds.concat({
+                    city: city[0],
+                    guesses: [],
+                    number: game.rounds.length + 1
+                });
+                await updatedGame.save();
+                res.send(updatedGame);
             }
-        });
-        return round;
-    });
-    return rounds;
-};
-
-const calculateScore = (city: ICity, guess: IGuess) => {
-    const distance = calculateDistance(city, guess);
-
-    return 100 * Math.sqrt(guess.time / 10) / (distance / 1000);
-};
-
-const calculateDistance = (city: ICity, guess: IGuess) => {
-    const earthRadiusKm = 6371;
-
-    const correctCoordinates: { latitude: number; longitude: number } = {
-        latitude: parseFloat(city.latitude),
-        longitude: parseFloat(city.longitude)
-    };
-
-    const guessCoordinates = guess.coordinates;
-    const degreesLatitude = degreesToRadians(
-        correctCoordinates.latitude - guessCoordinates.latitude
+        }
     );
-    const degreesLongitude = degreesToRadians(
-        correctCoordinates.longitude - guessCoordinates.longitude
-    );
-
-    const correctLatitudeRadians = degreesToRadians(
-        correctCoordinates.latitude
-    );
-    const guessLatitudeRadians = degreesToRadians(guessCoordinates.latitude);
-
-    const a =
-        Math.sin(degreesLatitude / 2) * Math.sin(degreesLatitude / 2) +
-        Math.sin(degreesLongitude / 2) *
-            Math.sin(degreesLongitude / 2) *
-            Math.cos(correctLatitudeRadians) *
-            Math.cos(guessLatitudeRadians);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return earthRadiusKm * c;
 };
-
-function degreesToRadians(degrees: number) {
-    return degrees * Math.PI / 180;
-}

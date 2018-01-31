@@ -41,7 +41,9 @@ export const generateToken = (userId: string, isGuest: boolean = false) => {
     });
 };
 
-export const getUserFromToken = async (token: string) => {
+export const getUserFromToken = async (
+    token: string
+): Promise<{ user: IUser; token: string }> => {
     let user;
     try {
         const decodedObject: any = jwt.verify(token, Keys.secret);

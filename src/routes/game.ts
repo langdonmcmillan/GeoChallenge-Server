@@ -1,11 +1,17 @@
 import * as passport from "passport";
 import { Express } from "express";
 
-import * as GameController from "../controllers/gameController";
+import {
+    createGame,
+    getRandomCity,
+    addCity
+} from "../controllers/gameController";
 
 export default (app: Express) => {
     // Creates initial game state
-    app.post("/api/game", GameController.createGame);
-    // Takes in an updated game state and saves
-    app.put("/api/game");
+    app.post("/api/game", createGame);
+    // Takes in the game state and returns a random city given the game settings
+    app.get("/api/game/city", getRandomCity);
+    // Takes in the game state and returns a random city given the game settings
+    app.post("/api/game/city", addCity);
 };

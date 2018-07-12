@@ -7,7 +7,7 @@ import * as uuid from "uuid/v1";
 import { Response, Request, NextFunction } from "express";
 
 import Keys from "../config/keys";
-import { IUser, User } from "../models/user";
+import { IUser, User } from "../models/user/user";
 
 const errorMessage = "An error occurred. Please try again later.";
 const noUser = "No user with that User Name/Email was found.";

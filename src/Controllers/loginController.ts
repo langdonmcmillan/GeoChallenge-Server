@@ -1,12 +1,22 @@
-import { Response, Request, NextFunction } from "express";
+import { Response, Request, NextFunction, Express } from "express";
 
 import Keys from "../config/keys";
-import { IUser, User } from "../models/user";
-import { generateToken } from "../services/authentication";
+import User from "../models/user/user";
+import { generateToken } from "../services/authentication/authentication";
+import * as AuthenticationService from "../services/authentication/authentication";
 
 const errorMessage = "An error occurred. Please try again later.";
 const noUser = "No user with that User Name/Email was found.";
 const wrongPassword = "Password does not match user record.";
+
+export default (app: Express) => {
+    // Creates user record.
+    app.post("/api/signup", signup);
+    // Returns user information after authenticating the given token
+    app.get("/api/user", AuthenticationService.requireAuthentication, getUser);
+    // Logs a user in and returns a token and user information
+    app.post("/api/login", login);
+};
 
 export const signup = (req: Request, res: Response, next: NextFunction) => {
     const { email, password, userName } = req.body;
@@ -16,7 +26,7 @@ export const signup = (req: Request, res: Response, next: NextFunction) => {
             .status(400)
             .send({ message: "Email and password required." });
     User.findOne(
-        { $or: [{ userName: userName }, { email: email }] },
+        { $or: [{ userName: email }, { email: email }] },
         (error, existingUser: IUser) => {
             if (error) return res.status(500).send({ message: errorMessage });
 

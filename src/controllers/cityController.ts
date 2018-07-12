@@ -1,8 +1,6 @@
-import * as mongoose from "mongoose";
 import { Response, Request, NextFunction } from "express";
-import * as _ from "lodash";
 
-import { City, ICity } from "../models/city";
+import { City, ICity } from "../models/location/city";
 
 export const getCity = async (
     req: Request,

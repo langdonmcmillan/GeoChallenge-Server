@@ -1,6 +1,6 @@
 import Difficulty from "../enums/difficulty";
-import { Game, IGame, IRound, IGuess } from "../models/game";
-import { ICity, City } from "../models/city";
+import { Game, IGame, IRound, IGuess } from "../models/game/game";
+import { ICity, City } from "../models/location/city";
 
 export const getDifficultyFilters = (
     difficulty: string
@@ -35,7 +35,7 @@ export const addGuess = async (game: IGame, guess: IGuess): Promise<IGame> => {
 export const calculateScore = (city: ICity, guess: IGuess): number => {
     const distance = calculateDistance(city, guess);
 
-    return 100 * Math.sqrt(guess.time / 10) / (distance / 1000);
+    return (100 * Math.sqrt(guess.time / 10)) / (distance / 1000);
 };
 
 export const calculateDistance = (city: ICity, guess: IGuess): number => {
@@ -70,7 +70,7 @@ export const calculateDistance = (city: ICity, guess: IGuess): number => {
 };
 
 const degreesToRadians = (degrees: number): number => {
-    return degrees * Math.PI / 180;
+    return (degrees * Math.PI) / 180;
 };
 
 export const closePreviousQuestions = (game: IGame) => {

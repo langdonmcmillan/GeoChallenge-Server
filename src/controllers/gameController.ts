@@ -1,10 +1,8 @@
-import * as mongoose from "mongoose";
 import { Response, Request, NextFunction } from "express";
-import * as _ from "lodash";
 
 import { getUserFromToken } from "../services/authentication";
-import { Game, IGame, IRound, IGuess } from "../models/game";
-import { ICity, City } from "../models/city";
+import { Game, IGame, IRound, IGuess } from "../models/game/game";
+import { ICity, City } from "../models/location/city";
 import {
     addGuess,
     getDifficultyFilters,

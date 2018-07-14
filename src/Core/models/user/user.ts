@@ -3,6 +3,7 @@ export default interface User {
     name: string;
     email: string;
     password: string;
-    createdDate: Date;
-    updatedDate: Date;
+    isActive?: boolean;
+    createdDate?: Date;
+    updatedDate?: Date;
 }

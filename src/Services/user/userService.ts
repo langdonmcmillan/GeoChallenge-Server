@@ -1,10 +1,10 @@
 import * as bcrypt from "bcrypt";
 
-import { addUser, getUser, getUsers } from "../../Core/db/user/userDAL";
+import * as dal from "../../Core/db/user/userDAL";
 import ResponseObject from "../../Core/models/utility/responseObject";
 import User from "../../Core/models/user/user";
 
-export const createUser = async (
+export const addUser = async (
     name: string,
     email: string,
     password: string
@@ -15,7 +15,7 @@ export const createUser = async (
             response.status = 400;
             response.message = "Username, Email and Password are required.";
         } else {
-            const existingUsers = await getUsers(name, email);
+            const existingUsers = await dal.getUsers(name, email);
             if (existingUsers && existingUsers.length > 0) {
                 response.status = 400;
                 response.message = _getExistingUserMessage(
@@ -24,7 +24,7 @@ export const createUser = async (
                 );
             } else {
                 password = await bcrypt.hash(password, 12);
-                response.data = await addUser({
+                response.data = await dal.addUser({
                     id: 0,
                     name,
                     email,
@@ -47,11 +47,17 @@ export const getSingleUser = async (
     email?: string
 ) => {
     let user: User = undefined;
-    if (id) {
-        user = await getUser(id);
-    } else {
-        const users = await getUsers(name, email);
-        if (users) user = users[0];
+    try {
+        if (id) {
+            user = await dal.getUser(id);
+        } else {
+            const users = await dal.getUsers(name, email);
+            if (users) user = users[0];
+        }
+        return user;
+    } catch (error) {
+        error;
+        user = undefined;
     }
     return user;
 };

@@ -4,6 +4,9 @@ export default {
         user: "geochallenge",
         password: "geochallenge12!",
         server: "LANGDON\\SQLEXPRESS01",
-        database: "GeoChallenge_Dev"
+        database: "GeoChallenge_Dev",
+        options: {
+            encrypt: false
+        }
     }
 };

@@ -3,6 +3,7 @@ import * as bodyParser from "body-parser";
 
 import { registerUserRoutes } from "./Controllers/userController";
 import { registerLoginRoutes } from "./Controllers/loginController";
+import { authenticateUser } from "./Middlewares/authenticationMiddleware";
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(
     })
 );
 app.use(bodyParser.json());
+app.use(authenticateUser);
 
 registerUserRoutes(app);
 registerLoginRoutes(app);

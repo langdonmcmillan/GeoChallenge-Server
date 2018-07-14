@@ -9,7 +9,7 @@ export const registerLoginRoutes = (app: Express) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-    const { user } = req;
+    const { user } = req.body;
     const response: ResponseObject = await loginUser(user);
     res.status(response.status).send(response);
 };

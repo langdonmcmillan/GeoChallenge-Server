@@ -29,6 +29,7 @@ export const loginUser = async (user: User) => {
             }
         }
     } catch (error) {
+        error;
         response.status = 500;
         response.message = "An error occurred.";
     }

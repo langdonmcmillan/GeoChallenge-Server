@@ -1,22 +1,18 @@
 import { Response, Request, Express } from "express";
 
 import { addUser } from "../Services/user/userService";
-import * as AuthenticationMiddleware from "../Middlewares/authenticationMiddleware";
+import { requireAuthentication } from "../Middlewares/authenticationMiddleware";
 
 export const registerUserRoutes = (app: Express) => {
     // Creates user record.
     app.post("/api/user", registerUser);
     // Returns user information after authenticating the given token
-    app.get(
-        "/api/user",
-        AuthenticationMiddleware.requireAuthentication,
-        getUser
-    );
+    app.get("/api/user", requireAuthentication, getUser);
 };
 
 export const registerUser = async (req: Request, res: Response) => {
-    const { name, email, password } = req.body;
-    const response = await addUser(name, email, password);
+    const { name, email, password, isGuest } = req.body;
+    const response = await addUser(name, email, password, isGuest);
     return res.status(response.status).send(response);
 };
 

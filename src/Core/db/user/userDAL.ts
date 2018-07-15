@@ -1,6 +1,5 @@
 const sql = require("mssql");
 
-import config from "../../config/keys";
 import User from "../../models/user/user";
 import SqlParam from "../../models/utility/sqlParam";
 import { executeStoredProcedure } from "../baseDAL";
@@ -27,18 +26,19 @@ export const getUsers = async (
         : undefined;
 };
 
-export const addUser = async (user: User): Promise<User | Error> => {
+export const addUser = async (user: User): Promise<User> => {
     const params: SqlParam[] = [
         { name: "name", type: sql.VarChar, value: user.name },
         { name: "email", type: sql.VarChar, value: user.email },
-        { name: "password", type: sql.VarChar, value: user.password }
+        { name: "password", type: sql.VarChar, value: user.password },
+        { name: "isGuest", type: sql.Bit, value: user.isGuest }
     ];
     const result = await executeStoredProcedure("AddUser", params);
 
     return mapRowToUser(result.recordset[0]);
 };
 
-export const updateUser = async (user: User): Promise<User | Error> => {
+export const updateUser = async (user: User): Promise<User> => {
     const params: SqlParam[] = [
         { name: "id", type: sql.Int, value: user.id },
         { name: "name", type: sql.VarChar, value: user.name },
@@ -58,6 +58,7 @@ const mapRowToUser = (row: any): User => {
         email: row.Email,
         password: row.Password,
         isActive: row.IsActive,
+        isGuest: row.IsGuest,
         createdDate: row.CreatedDate,
         updatedDate: row.UpdatedDate
     };

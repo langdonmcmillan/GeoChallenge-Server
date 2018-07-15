@@ -1,4 +1,4 @@
-const sql = require("mssql");
+import * as sql from "mssql";
 
 import config from "../config/keys";
 import SqlParam from "../models/utility/sqlParam";

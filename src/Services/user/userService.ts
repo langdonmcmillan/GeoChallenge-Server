@@ -6,17 +6,10 @@ import { generateToken } from "./authenticationService";
 import ResponseObject from "../../Core/models/utility/responseObject";
 import User from "../../Core/models/user/user";
 
-export const addUser = async (
-    name: string,
-    email: string,
-    password: string,
-    isGuest: boolean = false
-): Promise<ResponseObject> => {
+export const addUser = async (user: User): Promise<ResponseObject> => {
     let response: ResponseObject = { status: 200 };
     try {
-        response = isGuest
-            ? await _addGuest()
-            : await _addUser(name, email, password);
+        response = user.isGuest ? await _addGuest() : await _addUser(user);
     } catch (error) {
         response = {
             status: 500,
@@ -49,31 +42,23 @@ export const getSingleUser = async (
     return user;
 };
 
-const _addUser = async (
-    name: string,
-    email: string,
-    password: string
-): Promise<ResponseObject> => {
+const _addUser = async (user: User): Promise<ResponseObject> => {
     const response: ResponseObject = { status: 200 };
 
-    if (!name || !email || !password) {
+    if (!user.name || !user.email || !user.password) {
         response.status = 400;
         response.message = "Username, Email and Password are required.";
     } else {
-        const existingUsers = await dal.getUsers(name, email);
+        const existingUsers = await dal.getUsers(user.name, user.email);
         if (existingUsers && existingUsers.length > 0) {
             response.status = 400;
             response.message = _getExistingUserMessage(name, existingUsers[0]);
         } else {
-            password = await bcrypt.hash(password, 12);
-            const user = await dal.addUser({
-                name,
-                email,
-                password,
-                isGuest: false
-            });
-            const token = generateToken(user.id);
-            response.data = { user, token };
+            user.password = await bcrypt.hash(user.password, 12);
+            user.isGuest = false;
+            const newUser = await dal.addUser(user);
+            const token = generateToken(newUser.id);
+            response.data = { user: newUser, token };
         }
     }
     return response;

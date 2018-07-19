@@ -11,9 +11,9 @@ export const registerUserRoutes = (app: Express) => {
 };
 
 export const registerUser = async (req: Request, res: Response) => {
-    const { name, email, password, isGuest } = req.body;
-    const response = await addUser(name, email, password, isGuest);
-    return res.status(response.status).send(response);
+    const { user } = req.body;
+    const response = await addUser(user);
+    return res.status(response.status).send(response.data);
 };
 
 export const getUser = async (req: Request, res: Response) => {

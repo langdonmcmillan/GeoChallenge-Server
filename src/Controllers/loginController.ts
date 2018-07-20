@@ -1,6 +1,6 @@
 import { Response, Request, Express } from "express";
 
-import { loginUser } from "../services/user/AuthenticationService";
+import { loginUser } from "../Services/user/authenticationService";
 import ResponseObject from "../Core/models/utility/responseObject";
 
 export const registerLoginRoutes = (app: Express) => {
